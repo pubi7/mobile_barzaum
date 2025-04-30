@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lab9/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'chat.dart';
 
 class UserPage extends StatelessWidget {
   void showEdit(BuildContext context, String uid, String name, String age) {
@@ -110,6 +111,17 @@ class UserPage extends StatelessWidget {
 
                         showEdit(context, currentUser?.uid ?? '', name, age);
                       },
+                    ),
+
+                    IconButton(
+                      onPressed: () {
+                        // Navigate to chat page
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => ChatPage()),
+                        );
+                      },
+                      icon: Icon(Icons.chat_bubble),
                     ),
                   ],
                 ),
