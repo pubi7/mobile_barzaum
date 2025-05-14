@@ -4,8 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'login_page.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'admin.dart';
 import 'user.dart';
 
@@ -25,46 +23,38 @@ class MyApp extends StatelessWidget {
 class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream:
-          FirebaseAuth.instance
-              .authStateChanges(), //check if user is logged in or not
-
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
         if (snapshot.hasData) {
-          final uid = snapshot.data!.uid; // Get the user ID
+          // User is logged in, check role
           return FutureBuilder(
             future:
                 FirebaseFirestore.instance
                     .collection('users')
-                    .doc(uid)
-                    .get(), // Fetch user data from Firestore
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator());
+                    .doc(snapshot.data!.uid)
+                    .get(),
+            builder: (context, userSnapshot) {
+              if (!userSnapshot.hasData) {
+                return Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
               }
-
-              final role = snapshot.data!.get(
-                'role',
-              ); // Get the role from Firestore
-              if (role == 'admin') {
-                return AdminPage(); // Navigate to admin page
+              final data = userSnapshot.data!.data() as Map<String, dynamic>;
+              if (data['role'] == 'admin') {
+                return AdminPage();
               } else {
-                return UserPage(); // Navigate to user page
+                return UserPage();
               }
             },
           );
-        } else {
-          return LoginPage(); // Show login page if not logged in
         }
+        // Not logged in
+        return LoginPage();
       },
     );
   }
 }
-
-
-
-
-
-
-//CRUD - Create, Read, Update, Delete

@@ -8,6 +8,9 @@ class ChatPage extends StatelessWidget {
       TextEditingController(); //get user s msg from text field
 
   void sendMessage() async {
+    if (messageCon.text.trim().isEmpty) {
+      return; // Do not send empty messages
+    }
     final user = FirebaseAuth.instance.currentUser;
     final userData =
         await FirebaseFirestore.instance

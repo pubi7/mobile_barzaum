@@ -3,11 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lab9/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
+import 'test_list_page.dart';
+import 'score_history.dart';
 
 class UserPage extends StatelessWidget {
-  void showEdit(BuildContext context, String uid, String name, String age) {
+  void showEdit(
+    BuildContext context,
+    String uid,
+    String name,
+    String age,
+    String phone_number,
+  ) {
     final NameCon = TextEditingController(text: name);
     final AgeCon = TextEditingController(text: age);
+    final NumCon = TextEditingController(text: phone_number);
     showDialog(
       context: context,
       builder:
@@ -25,6 +34,11 @@ class UserPage extends StatelessWidget {
                   decoration: InputDecoration(labelText: 'Age'),
                   keyboardType: TextInputType.number,
                 ),
+                TextField(
+                  controller: NumCon,
+                  decoration: InputDecoration(labelText: 'Phone number'),
+                  keyboardType: TextInputType.number,
+                ),
               ],
             ),
             actions: [
@@ -36,6 +50,7 @@ class UserPage extends StatelessWidget {
                 onPressed: () async {
                   final newName = NameCon.text.trim();
                   final newAge = AgeCon.text.trim();
+                  final newPhone = NumCon.text.trim();
 
                   await FirebaseFirestore.instance
                       .collection('users')
@@ -43,6 +58,7 @@ class UserPage extends StatelessWidget {
                       .update({
                         'name': newName,
                         'age': int.tryParse(newAge) ?? 0,
+                        'phone_number': newPhone,
                       });
                   Navigator.pop(context);
                 },
@@ -78,52 +94,136 @@ class UserPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Name: ${data['name']}',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: EdgeInsets.all(16),
+                  margin: EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'User Information',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Name: ${data['name']}',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Age: ${data['age']}',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Email: ${data['email']}',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Phone number: ${data['phone_number']}',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Role: ${data['role']}',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 8),
-                Text('Age: ${data['age']}', style: TextStyle(fontSize: 20)),
-                SizedBox(height: 8),
-                Text('Email: ${data['email']}', style: TextStyle(fontSize: 20)),
-                SizedBox(height: 8),
-                Text('Role: ${data['role']}', style: TextStyle(fontSize: 20)),
                 SizedBox(height: 16),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: () async {
-                        await FirebaseAuth.instance.signOut();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => LoginPage()),
-                        );
-                      },
-                      icon: Icon(Icons.logout),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () async {
-                        final name = data['name'] ?? '';
-                        final age = data['age']?.toString() ?? '';
+                // Action buttons in a container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () async {
+                          await FirebaseAuth.instance.signOut();
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => LoginPage()),
+                          );
+                        },
+                        icon: Icon(Icons.logout),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () async {
+                          final name = data['name'] ?? '';
+                          final age = data['age']?.toString() ?? '';
+                          final phone_number = data['phone_number'] ?? '';
 
-                        showEdit(context, currentUser?.uid ?? '', name, age);
-                      },
-                    ),
+                          showEdit(
+                            context,
+                            currentUser?.uid ?? '',
+                            name,
+                            age,
+                            phone_number,
+                          );
+                        },
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => ChatPage()),
+                          );
+                        },
+                        icon: Icon(Icons.chat_bubble),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => TestListPage()),
+                    );
+                  },
+                  child: Text('View Tests'),
+                ),
 
-                    IconButton(
-                      onPressed: () {
-                        // Navigate to chat page
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => ChatPage()),
-                        );
-                      },
-                      icon: Icon(Icons.chat_bubble),
-                    ),
-                  ],
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ScoreHistoryPage()),
+                    );
+                  },
+                  child: Text('View Score History'),
                 ),
               ],
             ),
